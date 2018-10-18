@@ -9,6 +9,8 @@ import com.atlassian.bamboo.task.TaskType;
 import com.atlassian.utils.process.ExternalProcess;
 import com.atlassian.utils.process.StringOutputHandler;
 
+import nl.avisi.bamboo.plugins.elmforbamboo.ElmTestRunnerTaskConfigurator;
+
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,8 @@ public class ElmTestRunnerTask implements TaskType {
     @NotNull
     @Override
     public TaskResult execute(@NotNull final TaskContext taskContext) {
+        final String elmMakeLocation = taskContext.getConfigurationMap().get(ElmTestRunnerTaskConfigurator.ELM_MAKE_LOCATION);
+        final String elmTestLocation = taskContext.getConfigurationMap().get(ElmTestRunnerTaskConfigurator.ELM_TEST_LOCATION);
         final String testFilePattern = taskContext.getConfigurationMap().get("testOutputFile");
 
         final TaskResultBuilder builder = TaskResultBuilder.newBuilder(taskContext);
@@ -31,8 +35,8 @@ public class ElmTestRunnerTask implements TaskType {
         final StringOutputHandler outputHandler = new StringOutputHandler();
         final ExternalProcess process =
                 new ExternalProcessViaBatchBuilder()
-                        .command(Arrays.asList("./node_modules/.bin/elm-test",
-                                "--compiler=" + taskContext.getWorkingDirectory().toString() + "/node_modules/.bin/elm-make",
+                        .command(Arrays.asList(taskContext.getWorkingDirectory().toString() + elmTestLocation,
+                                "--compiler=" + taskContext.getWorkingDirectory().toString() + elmMakeLocation,
                                 "--report=json"),
                                 taskContext.getWorkingDirectory())
                         .handler(new BambooProcessHandler(outputHandler, outputHandler))
